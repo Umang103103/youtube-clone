@@ -13,6 +13,7 @@ import moment from "moment";
 const PlayVideo = ({ videoId }) => {
   const [apiData, setApiData] = useState(null);
   const [channelData, setChannelData] = useState(null);
+  const [commentData, setCommentData] = useState([]);
 
   const fetchOtherData = async (channelId) => {
     // Fetching channel details
@@ -20,6 +21,12 @@ const PlayVideo = ({ videoId }) => {
     await fetch(channelData_url)
       .then((response) => response.json())
       .then((data) => setChannelData(data.items[0]));
+
+    // Fetching comments data
+    const comments_url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&maxResults=50&videoId=${videoId}&key=${API_KEY}`;
+    await fetch(comments_url)
+      .then((response) => response.json())
+      .then((data) => setCommentData(data.items));
   };
 
   const fetchVideoData = async () => {
@@ -103,62 +110,32 @@ const PlayVideo = ({ videoId }) => {
           {apiData ? value_converter(apiData.statistics.commentCount) : "102"}{" "}
           comments
         </h4>
-        <div className="comment">
-          <img src={user_profile} alt="User" />
-          <div>
-            <h3>
-              John Doe <span>2 days ago</span>
-            </h3>
-            <p>Great video! Very informative and easy to understand.</p>
-            <div className="comment-action">
-              <img src={like} alt="Like" />
-              <span>244</span>
-              <img src={dislike} alt="Dislike" />
+        {commentData.map((item, index) => {
+          return (
+            <div key={index} className="comment">
+              <img
+                src={item.snippet.topLevelComment.snippet.authorProfileImageUrl}
+                alt="User"
+              />
+              <div>
+                <h3>
+                  {item.snippet.topLevelComment.snippet.authorDisplayName}{" "}
+                  <span>2 days ago</span>
+                </h3>
+                <p>{item.snippet.topLevelComment.snippet.textDisplay}</p>
+                <div className="comment-action">
+                  <img src={like} alt="Like" />
+                  <span>
+                    {value_converter(
+                      item.snippet.topLevelComment.snippet.likeCount,
+                    )}
+                  </span>
+                  <img src={dislike} alt="Dislike" />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="comment">
-          <img src={user_profile} alt="User" />
-          <div>
-            <h3>
-              John Doe <span>2 days ago</span>
-            </h3>
-            <p>Great video! Very informative and easy to understand.</p>
-            <div className="comment-action">
-              <img src={like} alt="Like" />
-              <span>244</span>
-              <img src={dislike} alt="Dislike" />
-            </div>
-          </div>
-        </div>
-        <div className="comment">
-          <img src={user_profile} alt="User" />
-          <div>
-            <h3>
-              John Doe <span>2 days ago</span>
-            </h3>
-            <p>Great video! Very informative and easy to understand.</p>
-            <div className="comment-action">
-              <img src={like} alt="Like" />
-              <span>244</span>
-              <img src={dislike} alt="Dislike" />
-            </div>
-          </div>
-        </div>
-        <div className="comment">
-          <img src={user_profile} alt="User" />
-          <div>
-            <h3>
-              John Doe <span>2 days ago</span>
-            </h3>
-            <p>Great video! Very informative and easy to understand.</p>
-            <div className="comment-action">
-              <img src={like} alt="Like" />
-              <span>244</span>
-              <img src={dislike} alt="Dislike" />
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
